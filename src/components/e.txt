@@ -1,0 +1,1451 @@
+# AI Mock Interview Platform — Frontend (MERN)
+
+## Tech Stack
+
+* React + Vite
+* Tailwind CSS
+* React Router DOM
+* Axios
+* React Hot Toast
+* Lucide React Icons
+
+---
+
+# Folder Structure
+
+```bash
+src/
+ ├── api/
+ │    └── api.js
+ ├── components/
+ │    ├── Navbar.jsx
+ │    ├── Sidebar.jsx
+ │    ├── InterviewCard.jsx
+ │    ├── QuestionCard.jsx
+ │    ├── Loader.jsx
+ │    └── ProtectedRoute.jsx
+ │
+ ├── pages/
+ │    ├── Login.jsx
+ │    ├── Register.jsx
+ │    ├── Dashboard.jsx
+ │    ├── GenerateInterview.jsx
+ │    ├── InterviewSession.jsx
+ │    ├── Result.jsx
+ │    └── History.jsx
+ │
+ ├── context/
+ │    └── AuthContext.jsx
+ │
+ ├── App.jsx
+ ├── main.jsx
+ └── index.css
+```
+
+---
+
+# Main Features
+
+## Authentication
+
+* Register
+* Login
+* JWT token storage
+* Protected routes
+
+## Dashboard
+
+* Welcome card
+* Total interviews
+* Recent interviews
+* Start interview button
+
+## AI Interview Generator
+
+User selects:
+
+* Role
+* Difficulty
+* Number of questions
+
+Then frontend sends request to backend.
+
+---
+
+# Pages UI Plan
+
+## Login Page
+
+### Fields
+
+* Email
+* Password
+
+### UI
+
+* Centered glassmorphism card
+* Dark modern UI
+* Gradient background
+
+---
+
+## Register Page
+
+### Fields
+
+* Username
+* Email
+* Password
+
+---
+
+## Dashboard Page
+
+### Sections
+
+* Sidebar
+* Statistics cards
+* Recent interview list
+* Generate new interview button
+
+### Stats Examples
+
+* Total Interviews
+* Average Score
+* Best Score
+
+---
+
+## Generate Interview Page
+
+### Inputs
+
+* Job Role
+* Experience Level
+* Tech Stack
+* Question Count
+
+### Button
+
+Generate Questions
+
+---
+
+## Interview Session Page
+
+### Layout
+
+* Question card
+* Textarea for answer
+* Next button
+* Submit Interview button
+
+### Optional
+
+Voice-to-text answer input.
+
+---
+
+## Result Page
+
+### Display
+
+* AI feedback
+* Score
+* Improvement tips
+* Strengths
+
+---
+
+# Suggested Color Theme
+
+## Background
+
+```css
+bg-[#0f172a]
+```
+
+## Cards
+
+```css
+bg-[#1e293b]
+```
+
+## Accent
+
+```css
+bg-blue-500
+```
+
+---
+
+# Install Commands
+
+```bash
+npm create vite@latest frontend
+cd frontend
+npm install
+```
+
+Install dependencies:
+
+```bash
+npm install react-router-dom axios react-hot-toast lucide-react
+```
+
+Install Tailwind:
+
+```bash
+npm install -D tailwindcss @tailwindcss/vite
+```
+
+---
+
+# App.jsx
+
+```jsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import GenerateInterview from "./pages/GenerateInterview";
+import InterviewSession from "./pages/InterviewSession";
+import Result from "./pages/Result";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/generate" element={<GenerateInterview />} />
+        <Route path="/interview/:id" element={<InterviewSession />} />
+        <Route path="/result/:id" element={<Result />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+```
+
+---
+
+# Axios API Setup
+
+## src/api/api.js
+
+```jsx
+import axios from "axios";
+
+const API = axios.create({
+  baseURL: "http://localhost:5000/api",
+});
+
+API.interceptors.request.use((req) => {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    req.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return req;
+});
+
+export default API;
+```
+
+---
+
+# Example Generate Interview Request
+
+```jsx
+const generateInterview = async () => {
+  try {
+    const response = await API.post("/interview/generate", {
+      role: "MERN Stack Developer",
+      level: "Fresher",
+      count: 5,
+    });
+
+    console.log(response.data);
+  } catch (err) {
+    console.log(err);
+  }
+};
+```
+
+---
+
+# Dashboard Card Example
+
+```jsx
+<div className="bg-[#1e293b] p-6 rounded-2xl shadow-lg">
+  <h2 className="text-gray-400">Total Interviews</h2>
+  <p className="text-3xl font-bold text-white mt-2">12</p>
+</div>
+```
+
+---
+
+# Interview Question Card
+
+```jsx
+<div className="bg-[#1e293b] p-6 rounded-2xl">
+  <h2 className="text-xl font-semibold text-white mb-4">
+    Explain JWT Authentication.
+  </h2>
+
+  <textarea
+    className="w-full h-40 bg-[#0f172a] border border-gray-700 rounded-xl p-4 text-white"
+    placeholder="Write your answer..."
+  />
+</div>
+```
+
+---
+
+# Resume-Worthy Features To Mention
+
+* AI-powered interview generation
+* Personalized feedback system
+* JWT authentication
+* Protected routes
+* Responsive dashboard
+* REST API integration
+* Real-time user interaction
+
+---
+
+# Deployment
+
+## Frontend
+
+Deploy on:
+
+* Vercel
+
+## Backend
+
+Deploy on:
+
+* Render
+
+---
+
+# Build Order (FASTEST)
+
+## Phase 1
+
+* Setup Vite
+* Setup Tailwind
+* Setup routing
+
+## Phase 2 — Authentication + Dashboard UI
+
+# Login Page (Modern Dark UI)
+
+## Login.jsx
+
+```jsx
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import API from "../api/api";
+import toast from "react-hot-toast";
+
+const Login = () => {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await API.post("/auth/login", formData);
+
+      localStorage.setItem("token", response.data.token);
+
+      toast.success("Login successful");
+
+      navigate("/dashboard");
+    } catch (err) {
+      toast.error("Invalid credentials");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-[#1e293b] rounded-3xl p-8 shadow-2xl">
+        <h1 className="text-3xl font-bold text-white text-center mb-2">
+          Welcome Back
+        </h1>
+
+        <p className="text-gray-400 text-center mb-8">
+          Login to continue your interview journey
+        </p>
+
+        <form onSubmit={handleLogin} className="space-y-5">
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full p-4 rounded-xl bg-[#0f172a] text-white border border-gray-700 outline-none"
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full p-4 rounded-xl bg-[#0f172a] text-white border border-gray-700 outline-none"
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+          />
+
+          <button className="w-full bg-blue-500 hover:bg-blue-600 transition-all text-white py-4 rounded-xl font-semibold">
+            Login
+          </button>
+        </form>
+
+        <p className="text-gray-400 text-center mt-6">
+          Don't have an account?{' '}
+          <Link to="/register" className="text-blue-400">
+            Register
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
+```
+
+---
+
+# Register Page
+
+## Register.jsx
+
+```jsx
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import API from "../api/api";
+import toast from "react-hot-toast";
+
+const Register = () => {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    try {
+      await API.post("/auth/register", formData);
+
+      toast.success("Registration successful");
+
+      navigate("/");
+    } catch (err) {
+      toast.error("Something went wrong");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-[#1e293b] rounded-3xl p-8 shadow-2xl">
+        <h1 className="text-3xl font-bold text-white text-center mb-2">
+          Create Account
+        </h1>
+
+        <p className="text-gray-400 text-center mb-8">
+          Start preparing smarter with AI
+        </p>
+
+        <form onSubmit={handleRegister} className="space-y-5">
+          <input
+            type="text"
+            placeholder="Username"
+            className="w-full p-4 rounded-xl bg-[#0f172a] text-white border border-gray-700 outline-none"
+            onChange={(e) =>
+              setFormData({ ...formData, username: e.target.value })
+            }
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full p-4 rounded-xl bg-[#0f172a] text-white border border-gray-700 outline-none"
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full p-4 rounded-xl bg-[#0f172a] text-white border border-gray-700 outline-none"
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+          />
+
+          <button className="w-full bg-blue-500 hover:bg-blue-600 transition-all text-white py-4 rounded-xl font-semibold">
+            Register
+          </button>
+        </form>
+
+        <p className="text-gray-400 text-center mt-6">
+          Already have an account?{' '}
+          <Link to="/" className="text-blue-400">
+            Login
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default Register;
+```
+
+---
+
+# Dashboard Page
+
+## Dashboard.jsx
+
+```jsx
+import React from "react";
+import { Brain, Trophy, History } from "lucide-react";
+import { Link } from "react-router-dom";
+
+const Dashboard = () => {
+  return (
+    <div className="min-h-screen bg-[#0f172a] text-white p-6">
+      <div className="flex items-center justify-between mb-10">
+        <div>
+          <h1 className="text-4xl font-bold">Dashboard</h1>
+          <p className="text-gray-400 mt-2">
+            Track your interview performance
+          </p>
+        </div>
+
+        <Link
+          to="/generate"
+          className="bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded-xl font-semibold"
+        >
+          Start Interview
+        </Link>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6 mb-10">
+        <div className="bg-[#1e293b] rounded-2xl p-6 shadow-lg">
+          <Brain size={40} className="mb-4" />
+          <h2 className="text-gray-400">Total Interviews</h2>
+          <p className="text-4xl font-bold mt-2">12</p>
+        </div>
+
+        <div className="bg-[#1e293b] rounded-2xl p-6 shadow-lg">
+          <Trophy size={40} className="mb-4" />
+          <h2 className="text-gray-400">Best Score</h2>
+          <p className="text-4xl font-bold mt-2">92%</p>
+        </div>
+
+        <div className="bg-[#1e293b] rounded-2xl p-6 shadow-lg">
+          <History size={40} className="mb-4" />
+          <h2 className="text-gray-400">Practice Hours</h2>
+          <p className="text-4xl font-bold mt-2">18h</p>
+        </div>
+      </div>
+
+      <div className="bg-[#1e293b] rounded-2xl p-6">
+        <h2 className="text-2xl font-semibold mb-6">
+          Recent Interviews
+        </h2>
+
+        <div className="space-y-4">
+          <div className="bg-[#0f172a] p-4 rounded-xl flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold">MERN Stack Interview</h3>
+              <p className="text-gray-400 text-sm">Completed yesterday</p>
+            </div>
+
+            <span className="bg-green-500 px-4 py-2 rounded-lg">
+              88%
+            </span>
+          </div>
+
+          <div className="bg-[#0f172a] p-4 rounded-xl flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold">React Interview</h3>
+              <p className="text-gray-400 text-sm">Completed 2 days ago</p>
+            </div>
+
+            <span className="bg-yellow-500 px-4 py-2 rounded-lg">
+              74%
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
+```
+
+---
+
+# Add To main.jsx
+
+```jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
+import { Toaster } from 'react-hot-toast'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <Toaster position="top-right" />
+    <App />
+  </React.StrictMode>,
+)
+```
+
+---
+
+# Phase 3 — Generate Interview + API Integration
+
+# Generate Interview Page
+
+## GenerateInterview.jsx
+
+```jsx
+import React, { useState } from "react";
+import API from "../api/api";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+
+const GenerateInterview = () => {
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
+    role: "",
+    level: "Fresher",
+    techstack: "",
+    count: 5,
+  });
+
+  const handleGenerate = async (e) => {
+    e.preventDefault();
+
+    try {
+      setLoading(true);
+
+      const response = await API.post(
+        "/interview/generate",
+        formData
+      );
+
+      toast.success("Interview generated successfully");
+
+      navigate(`/interview/${response.data.interviewId}`);
+    } catch (err) {
+      toast.error("Failed to generate interview");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-2xl bg-[#1e293b] rounded-3xl p-8 shadow-2xl">
+        <h1 className="text-4xl font-bold text-white mb-2">
+          Generate AI Interview
+        </h1>
+
+        <p className="text-gray-400 mb-8">
+          Create personalized interview questions instantly.
+        </p>
+
+        <form onSubmit={handleGenerate} className="space-y-6">
+          <div>
+            <label className="text-gray-300 block mb-2">
+              Job Role
+            </label>
+
+            <input
+              type="text"
+              placeholder="MERN Stack Developer"
+              className="w-full p-4 rounded-xl bg-[#0f172a] border border-gray-700 text-white outline-none"
+              onChange={(e) =>
+                setFormData({ ...formData, role: e.target.value })
+              }
+            />
+          </div>
+
+          <div>
+            <label className="text-gray-300 block mb-2">
+              Experience Level
+            </label>
+
+            <select
+              className="w-full p-4 rounded-xl bg-[#0f172a] border border-gray-700 text-white outline-none"
+              onChange={(e) =>
+                setFormData({ ...formData, level: e.target.value })
+              }
+            >
+              <option>Fresher</option>
+              <option>Intermediate</option>
+              <option>Experienced</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-gray-300 block mb-2">
+              Tech Stack
+            </label>
+
+            <input
+              type="text"
+              placeholder="React, Node.js, MongoDB"
+              className="w-full p-4 rounded-xl bg-[#0f172a] border border-gray-700 text-white outline-none"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  techstack: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div>
+            <label className="text-gray-300 block mb-2">
+              Number of Questions
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              max="15"
+              value={formData.count}
+              className="w-full p-4 rounded-xl bg-[#0f172a] border border-gray-700 text-white outline-none"
+              onChange={(e) =>
+                setFormData({ ...formData, count: e.target.value })
+              }
+            />
+          </div>
+
+          <button
+            disabled={loading}
+            className="w-full bg-blue-500 hover:bg-blue-600 transition-all text-white py-4 rounded-xl font-semibold"
+          >
+            {loading ? "Generating..." : "Generate Interview"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default GenerateInterview;
+```
+
+---
+
+# Backend Expected Response
+
+```json
+{
+  "interviewId": "123456",
+  "questions": [
+    "Explain JWT authentication",
+    "What is React Virtual DOM?"
+  ]
+}
+```
+
+---
+
+# Interview Session Page
+
+## InterviewSession.jsx
+
+```jsx
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import API from "../api/api";
+import toast from "react-hot-toast";
+
+const InterviewSession = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [questions, setQuestions] = useState([]);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState([]);
+  const [answer, setAnswer] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchInterview();
+  }, []);
+
+  const fetchInterview = async () => {
+    try {
+      const response = await API.get(`/interview/${id}`);
+
+      setQuestions(response.data.questions);
+    } catch (err) {
+      toast.error("Failed to load interview");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNext = () => {
+    const updatedAnswers = [...answers, answer];
+
+    setAnswers(updatedAnswers);
+    setAnswer("");
+
+    if (currentQuestion + 1 < questions.length) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      submitInterview(updatedAnswers);
+    }
+  };
+
+  const submitInterview = async (finalAnswers) => {
+    try {
+      const response = await API.post(`/interview/submit/${id}`, {
+        answers: finalAnswers,
+      });
+
+      toast.success("Interview submitted successfully");
+
+      navigate(`/result/${response.data.resultId}`);
+    } catch (err) {
+      toast.error("Failed to submit interview");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-white text-2xl">
+        Loading...
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0f172a] text-white px-4 py-10">
+      <div className="max-w-4xl mx-auto bg-[#1e293b] rounded-3xl p-8 shadow-2xl">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">
+            AI Mock Interview
+          </h1>
+
+          <span className="bg-blue-500 px-4 py-2 rounded-lg">
+            Question {currentQuestion + 1}/{questions.length}
+          </span>
+        </div>
+
+        <div className="bg-[#0f172a] p-6 rounded-2xl mb-6">
+          <h2 className="text-2xl font-semibold leading-relaxed">
+            {questions[currentQuestion]}
+          </h2>
+        </div>
+
+        <textarea
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+          placeholder="Write your answer here..."
+          className="w-full h-52 bg-[#0f172a] border border-gray-700 rounded-2xl p-5 outline-none resize-none"
+        />
+
+        <button
+          onClick={handleNext}
+          className="w-full mt-6 bg-blue-500 hover:bg-blue-600 transition-all py-4 rounded-xl font-semibold"
+        >
+          {currentQuestion + 1 === questions.length
+            ? "Submit Interview"
+            : "Next Question"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default InterviewSession;
+```
+
+---
+
+# Result Page
+
+## Result.jsx
+
+```jsx
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import API from "../api/api";
+import toast from "react-hot-toast";
+
+const Result = () => {
+  const { id } = useParams();
+
+  const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    fetchResult();
+  }, []);
+
+  const fetchResult = async () => {
+    try {
+      const response = await API.get(`/result/${id}`);
+
+      setResult(response.data);
+    } catch (err) {
+      toast.error("Failed to fetch result");
+    }
+  };
+
+  if (!result) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-white text-2xl">
+        Loading Results...
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0f172a] text-white px-4 py-10">
+      <div className="max-w-4xl mx-auto bg-[#1e293b] rounded-3xl p-8 shadow-2xl">
+        <div className="text-center mb-10">
+          <h1 className="text-5xl font-bold mb-4">
+            Interview Result
+          </h1>
+
+          <div className="inline-block bg-blue-500 px-8 py-4 rounded-2xl text-4xl font-bold">
+            {result.score}%
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">
+            AI Feedback
+          </h2>
+
+          <div className="bg-[#0f172a] p-6 rounded-2xl text-gray-300 leading-relaxed">
+            {result.feedback}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">
+            Improvement Tips
+          </h2>
+
+          <div className="bg-[#0f172a] p-6 rounded-2xl text-gray-300 leading-relaxed">
+            {result.tips}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Result;
+```
+
+---
+
+# Suggested Backend Routes
+
+## Auth
+
+```bash
+POST /api/auth/register
+POST /api/auth/login
+```
+
+## Interview
+
+```bash
+POST /api/interview/generate
+GET /api/interview/:id
+POST /api/interview/submit/:id
+```
+
+## Result
+
+```bash
+GET /api/result/:id
+```
+
+---
+
+# Suggested MongoDB Models
+
+## User
+
+* username
+* email
+* password
+
+## Interview
+
+* userId
+* role
+* level
+* questions
+* answers
+* score
+* feedback
+
+---
+
+# AI Prompt Example (Backend)
+
+```js
+const prompt = `
+Generate ${count} ${level} level interview questions
+for a ${role} position.
+Tech stack: ${techstack}
+`;
+```
+
+---
+
+# UI Improvements You Can Add Later
+
+* Typing animation
+* Voice input
+* AI avatar
+* Timer
+* Progress bar
+* Dark/light mode
+* Charts
+* Interview history page
+
+---
+
+## Phase 4 — Advanced Features + Resume Polish
+
+# Protected Route
+
+## components/ProtectedRoute.jsx
+
+```jsx
+import React from "react";
+import { Navigate } from "react-router-dom";
+
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/" />;
+  }
+
+  return children;
+};
+
+export default ProtectedRoute;
+```
+
+---
+
+# Update App.jsx
+
+```jsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import GenerateInterview from "./pages/GenerateInterview";
+import InterviewSession from "./pages/InterviewSession";
+import Result from "./pages/Result";
+import History from "./pages/History";
+
+import ProtectedRoute from "./components/ProtectedRoute";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+
+        <Route path="/register" element={<Register />} />
+
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/generate"
+          element={
+            <ProtectedRoute>
+              <GenerateInterview />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/interview/:id"
+          element={
+            <ProtectedRoute>
+              <InterviewSession />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/result/:id"
+          element={
+            <ProtectedRoute>
+              <Result />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <History />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+```
+
+---
+
+# Interview History Page
+
+## History.jsx
+
+```jsx
+import React, { useEffect, useState } from "react";
+import API from "../api/api";
+import toast from "react-hot-toast";
+
+const History = () => {
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  const fetchHistory = async () => {
+    try {
+      const response = await API.get("/interview/history");
+
+      setHistory(response.data);
+    } catch (err) {
+      toast.error("Failed to load history");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0f172a] text-white px-4 py-10">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h1 className="text-4xl font-bold">
+              Interview History
+            </h1>
+
+            <p className="text-gray-400 mt-2">
+              Track all your previous AI interviews
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-5">
+          {history.map((item) => (
+            <div
+              key={item._id}
+              className="bg-[#1e293b] rounded-2xl p-6 flex items-center justify-between"
+            >
+              <div>
+                <h2 className="text-2xl font-semibold">
+                  {item.role}
+                </h2>
+
+                <p className="text-gray-400 mt-1">
+                  {item.level} Level Interview
+                </p>
+              </div>
+
+              <div className="text-right">
+                <div className="bg-blue-500 px-5 py-3 rounded-xl text-xl font-bold inline-block">
+                  {item.score}%
+                </div>
+
+                <p className="text-gray-400 mt-2 text-sm">
+                  {new Date(item.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default History;
+```
+
+---
+
+# Logout Button
+
+## Add inside Dashboard.jsx
+
+```jsx
+const handleLogout = () => {
+  localStorage.removeItem("token");
+
+  navigate("/");
+};
+```
+
+Button:
+
+```jsx
+<button
+  onClick={handleLogout}
+  className="bg-red-500 hover:bg-red-600 px-5 py-3 rounded-xl"
+>
+  Logout
+</button>
+```
+
+---
+
+# Add Progress Bar
+
+## Inside InterviewSession.jsx
+
+```jsx
+<div className="w-full bg-gray-700 h-3 rounded-full mb-8 overflow-hidden">
+  <div
+    className="bg-blue-500 h-full"
+    style={{
+      width: `${((currentQuestion + 1) / questions.length) * 100}%`,
+    }}
+  />
+</div>
+```
+
+---
+
+# Add Loading Spinner
+
+## components/Loader.jsx
+
+```jsx
+import React from "react";
+
+const Loader = () => {
+  return (
+    <div className="flex items-center justify-center py-10">
+      <div className="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+};
+
+export default Loader;
+```
+
+---
+
+# Empty State UI
+
+```jsx
+<div className="text-center py-20">
+  <h2 className="text-3xl font-bold mb-3">
+    No Interviews Yet
+  </h2>
+
+  <p className="text-gray-400">
+    Start your first AI mock interview.
+  </p>
+</div>
+```
+
+---
+
+# Backend Route For History
+
+```bash
+GET /api/interview/history
+```
+
+---
+
+# Suggested Final Improvements
+
+## UI
+
+* Framer Motion animations
+* Glassmorphism cards
+* Gradient backgrounds
+* Hover effects
+* Skeleton loaders
+
+## Features
+
+* Voice answer recording
+* Webcam interview mode
+* AI avatar interviewer
+* Live timer
+* Code editor questions
+* Leaderboard
+
+---
+
+# Resume Points
+
+## Short Version
+
+* Developed an AI-powered mock interview platform using MERN stack and Gemini API
+* Implemented secure JWT authentication and protected routes
+* Built personalized AI-generated interview workflows with automated feedback analysis
+* Designed responsive dashboard interfaces with interview history tracking
+
+---
+
+# Final Deployment Stack
+
+## Frontend
+
+* Vercel
+
+## Backend
+
+* Render
+
+## Database
+
+* MongoDB Atlas
+
+---
+
+# Suggested GitHub Repo Structure
+
+```bash
+/client
+/server
+README.md
+```
+
+---
+
+# README Sections
+
+* Project Overview
+* Features
+* Tech Stack
+* Installation
+* Environment Variables
+* API Endpoints
+* Screenshots
+* Deployment Links
+
+---
+
+# Suggested Environment Variables
+
+## Backend .env
+
+```env
+PORT=5000
+MONGO_URI=
+JWT_SECRET=
+GEMINI_API_KEY=
+```
+
+---
+
+# Suggested Final Project Name
+
+* MockMate AI
+* HirePrep AI
+* Interviewly AI
+* PrepForge
+* AI Recruit Coach
+* InterviewIQ
+
+---
+
+# UI Inspiration
+
+Search on:
+
+* Dribbble
+* Mobbin
+* Behance
+
+Keywords:
+
+* SaaS Dashboard
+* AI Dashboard
+* Interview Platform UI
+
+---
+
+# Suggested Project Name
+
+* InterviewAI
+
+* MockMate
+
+* HirePrep AI
+
+* Interviewly AI
+
+* PrepForge
+
+* AI Recruit Coach
+
+* InterviewAI
+
+* MockMate
+
+* HirePrep AI
+
+* Interviewly AI
+
+* PrepForge
+
+* AI Recruit Coach
