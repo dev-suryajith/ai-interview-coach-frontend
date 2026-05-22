@@ -37,7 +37,7 @@ const Register = () => {
         "Registration successful"
       );
 
-      navigate("/");
+      navigate("/login");
 
     } catch (err) {
       toast.error("Registration failed");
@@ -168,7 +168,7 @@ const Register = () => {
               Already have an account?{" "}
 
               <Link
-                to="/"
+                to="/login"
                 className="text-blue-400 hover:text-blue-300 transition-all font-medium"
               >
                 Login
